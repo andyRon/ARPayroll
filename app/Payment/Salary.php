@@ -10,8 +10,7 @@ class Salary extends PaymentType
 
     public function monthlyAmount(): int
     {
-        // TODO: Implement monthlyAmount() method.
-        return 0;
+        return $this->employee->salary / 12;
     }
 
     public function type(): string

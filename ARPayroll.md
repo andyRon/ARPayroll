@@ -475,3 +475,29 @@ php artisan pest:test GetEmployeesTest
 
 
 
+
+
+### 支付API开发
+
+
+
+```sh
+php artisan pest:test PaycheckTest
+```
+
+#### 创建薪资支票
+
+
+
+#### 获取员工薪资记录
+
+```sh
+GET /api/v1/employees/[uuid]/paychecks
+```
+
+
+
+```sh
+php artisan pest:test GetEmployeePaychecksTest
+```
+
