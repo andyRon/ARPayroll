@@ -11,9 +11,12 @@ class EmployeeResource extends JsonApiResource
     {
         return [
             'name' => $this->full_name,
-            'job_title' => $this->job_title,
-            'payment_type' => $this->payment_type,
-            'salary' => $this->salary,
+            'email' => $this->email,
+            'jobTitle' => $this->job_title,
+            'payment' => [
+                'type' => $this->payment_type->type(),
+                'amount' => $this->payment_type->amount(),
+            ],
         ];
     }
 }

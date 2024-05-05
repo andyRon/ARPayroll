@@ -401,3 +401,41 @@ php artisan make:request UpdateDepartmentRequest
 
 
 
+### 员工API开发（上）
+
+#### 支付类型
+
+员工按照工资支付方式分为两种类型：
+
+- 工薪制：每月支付日，按年薪/12发放薪资给员工
+- 小时工：每月支付日，按工作时长（小时）x时薪发放薪资给员工
+
+
+
+#### 创建/更新员工
+
+
+
+```sh
+// Upsert = updte + insert
+php artisan pest:test UpsertDepartmentTest
+```
+
+
+
+```sh
+php artisan make:request UpsertEmployeeRequest
+```
+
+
+
+#### 创建/更新员工用例
+
+
+
+
+
+```sh
+php artisan make:controller EmployeeController --resource
+```
+
