@@ -175,30 +175,80 @@ it('should return an employee', function () {
 
 ```sh
 composer create-project laravel/laravel ARPayroll  10.x
+```
 
+
+
+`.env`配置数据库
+
+```sh
 composer require timacdonald/json-api:'v1.*'
 
 composer require spatie/laravel-query-builder
 php artisan vendor:publish --provider="Spatie\QueryBuilder\QueryBuilderServiceProvider" --tag="query-builder-config"
 ```
 
+#### Blueprint
 
+使用第三方扩展包 [Blueprint ](https://github.com/laravel-shift/blueprint)通过配置文件快速完成 Laravel 数据库迁移、模型类、工厂类等组件的编排和创建：
 
 ```sh
 composer require --dev laravel-shift/blueprint
+```
 
+发布配置文件 `draft.yaml` 到项目根目录：
+
+```sh
 php artisan blueprint:new --config
+```
+
+在 `draft.yaml` 中编写模型、模型字段属性以及模型之间的关联：
+
+```yaml
+models:
+  Department:
+    uuid: uuid
+    name: string:50
+    description: longtext
+    relationships:
+      hasMany: Employee
+  Employee:
+    uuid: uuid
+    full_name: string:100
+    email: string:100 index
+    department_id: id foreign
+    job_title: string:50
+    payment_type: string:20
+    salary: integer unsigned nullable
+    hourly_rate: integer unsigned nullable
+    relationships:
+      hasMany: Paycheck, Timelog
+  Paycheck:
+    uuid: uuid
+    employee_id: id foreign
+    net_amount: integer unsigned nullable
+    payed_at: timestamp nullable
+    relationships:
+      belongsTo: Employee
+  TimeLog:
+    uuid: uuid
+    employee_id: id foreign
+    started_at: timestamp nullable
+    stopped_at: timestamp nullable
+    minutes: integer unsigned nullable
+    relationships:
+      hasMany: Employee
 ```
 
 
 
-
+生成对应的模型类、数据库迁移以及模型工厂：
 
 ```sh
 php artisan blueprint:build
 ```
 
-
+基于数据库迁移文件在数据库中创建对应的数据表:
 
 ```sh
 php artisan migrate
@@ -206,11 +256,51 @@ php artisan migrate
 
 
 
+> 通过Blueprint这个扩展包来管理数据模型相关的类和文件还是很方便的，甚至还可以通过它生成控制器、表单请求、视图模板、路由、任务、事件等组件（需要额外配置），它的配置文件 `draft.yaml` 就像项目蓝图，你可以根据它快速生成 Laravel 项目运行所需的组件。
 
+#### API 版本
+
+不同版本的请求地址类似：
+
+```
+/api/v1/employees
+/api/v2/employees
+```
+
+针对不同版本 API 新建对应的路由文件管理相关路由：
+
+```
+routes/api/v1.php
+routes/api/v2.php
+```
+
+在 `app/Providers/RouteServiceProvider.php` 中通过路由前缀+版本文件提供对 API 版本的支持和管理：
+
+```php
+public function boot()
+{
+    // ...
+
+    $this->routes(function () {
+        Route::middleware(['api', 'auth:sanctum'])
+            ->prefix('api/v1')
+            ->group(base_path('routes/api/v1.php'));
+
+        Route::middleware(['api', 'auth:sanctum'])
+            ->prefix('api/v2')
+            ->group(base_path('routes/api/v2.php'));
+    });
+}
+```
 
 
 
 #### UUID
+
+API 不要对外暴露自增 ID，而要使用 UUID，两者的适用场景如下：
+
+- API 层使用 UUID
+- 业务逻辑层使用ID（主要是数据库查询场景）
 
 ```sh
 composer require ramsey/uuid
@@ -225,4 +315,89 @@ composer require pestphp/pest --dev --with-all-dependencies
 composer require pestphp/pest-plugin-laravel --dev
 php artisan pest:install
 ```
+
+> 🔖 问题：
+>
+> ```
+>  php artisan pest:install
+> 
+>    ERROR  Command "pest:install" is not defined. Did you mean one of these?  
+> 
+>   ⇂ migrate:install  
+>   ⇂ pest:dataset  
+>   ⇂ pest:test  
+>   ⇂ sail:inst
+> ```
+>
+> 
+
+
+
+
+
+### 部门API开发
+
+
+
+#### 创建部门
+
+```sh
+php artisan pest:test CreateDepartmentTest
+```
+
+
+
+
+
+
+
+```sh
+php artisan make:request StoreDepartmentRequest
+```
+
+
+
+
+
+```sh
+php artisan make:resource DepartmentResource
+```
+
+
+
+
+
+```sh
+php artisan make:controller DepartmentController --resource
+```
+
+
+
+
+
+#### 更新部门
+
+
+
+```sh
+php artisan pest:test UpdateDepartmentTest
+```
+
+
+
+```sh
+php artisan make:request UpdateDepartmentRequest
+```
+
+
+
+#### 获取部门
+
+
+
+
+
+#### 关联资源
+
+
 
