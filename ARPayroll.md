@@ -439,3 +439,39 @@ php artisan make:request UpsertEmployeeRequest
 php artisan make:controller EmployeeController --resource
 ```
 
+
+
+### 员工API开发（下）
+
+
+
+#### 获取员工列表
+
+```sh
+# 返回邮箱中包含 john@example.com 的所有员工
+GET /api/v1/employees?filter[email]=john@example.com
+
+# 返回姓名中包含 freek & 职位中包含 developer 的所有员工
+GET /api/v1/employees?filter[full_name]=freek&filter[job_title]=developer
+
+# 返回部门名称中包含 development 的所有员工
+GET /api/v1/employees?filter[department.name]=development
+
+# 返回员工时包含部门信息，避免 N+1 查询问题
+GET /api/v1/employees?include=department
+```
+
+
+
+
+
+```sh
+php artisan pest:test GetEmployeesTest
+```
+
+
+
+#### 资源和值对象
+
+
+
