@@ -24,7 +24,7 @@ enum PaymentTypes: string
      */
     public function makePaymentType(Employee $employee): PaymentType
     {
-        return match ($this) {      // TODO
+        return match ($this) {      // TODO  php7引入的语法
             self::SALARY => new Salary($employee),
             self::HOURLY_RATE => new HourlyRate($employee)
         };

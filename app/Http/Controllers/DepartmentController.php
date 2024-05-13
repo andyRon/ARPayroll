@@ -65,10 +65,10 @@ class DepartmentController extends Controller
      */
     public function update(UpdateDepartmentRequest $request, Department $department)
     {
-        $departmentData = new DepartmentData(...$request->validate());
+        $departmentData = new DepartmentData(...$request->validated());
         $department = $this->updateDepartment->execute($department, $departmentData);
 
-        return response()->noContent();
+        return response()->noContent();  // PUT请求没有响应 Body，所有不需要资源类包装响应数据。
     }
 
     /**

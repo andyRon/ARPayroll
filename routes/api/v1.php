@@ -10,17 +10,11 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('employees', EmployeeController::class);
 
-Route::get(
-    'departments/{department}/employees',
-    [DepartmentEmployeeController::class, 'index']
+Route::get('departments/{department}/employees', [DepartmentEmployeeController::class, 'index']
 )->name('department.employees.index');
 
-Route::post(
-    'paycheck',
-    [PaydayController::class, 'store']
+Route::post('paycheck', [PaydayController::class, 'store']
 )->name('payday.store');
 
-Route::get(
-    'employees/{employee}/paychecks',
-    [EmployeePaycheckController::class, 'index']
+Route::get('employees/{employee}/paychecks', [EmployeePaycheckController::class, 'index']
 )->name('employee.paychecks.index');

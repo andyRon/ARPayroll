@@ -7,7 +7,7 @@ https://laravelacademy.org/books/test-driven-apis-with-laravel
 
 简单的薪资系统CRM
 
-### CRM API 整体设计
+### 1 CRM API整体设计
 
 CRM 系统主要包含三个功能模块：
 
@@ -164,12 +164,12 @@ it('should return an employee', function () {
 现在很多中大型项目都流行通过领域驱动设计（Domain-Driven Design，简称DDD）完成架构设计，对于这个小项目，不需要那么重的设计，但是也可以把一些好的 DDD 理念引入进来，锦上添花：
 
 - Value Objects（值对象）: 通过封装到对象来处理标量数据，让标量数据从单一的数值演进到具备更多行为，例如，我们可以将金额值封装为一个 Money 对象，这样就可以提供行为方法将金额转化为不同单位币种的字符串展示格式了。
-- Data Transfer Objects(DTO): PHP成也数组，败也数组，在大型项目中，所有方法参数、返回值都是数组类型的话维护起来是灾难性的，你永远不知道这些非结构化的参数、返回值里面具体包含什么数据，你一定很熟悉那些 `undefined index` 报错吧。为此，我们可以通过把关联数组转化为 DTO 对象，从而方便处理关联数组表示的参数、返回值，让代码语义性更好，维护起来也更省心。
-- Actions: 这个不是 DDD 中的概念，实际上是 Laravel 提供的一个特性，我们可以**将所有用户故事表示为独立可复用的类**，封装到 Action 中，这是一种单一职责的设计原则体现，也是避免“胖服务”的有效方式。
+- ==Data Transfer Objects(DTO)==: PHP成也数组，败也数组，在大型项目中，所有方法参数、返回值都是数组类型的话维护起来是灾难性的，你永远不知道这些非结构化的参数、返回值里面具体包含什么数据，你一定很熟悉那些 `undefined index` 报错吧。为此，我们可以通过把关联数组转化为 DTO 对象，从而方便处理关联数组表示的参数、返回值，让代码语义性更好，维护起来也更省心。
+- Actions: 这个不是 DDD 中的概念，实际上是 Laravel 提供的一个特性，我们可以**将所有用户故事表示为独立可复用的类**，封装到 Action 中，这是一种==单一职责==的设计原则体现，也是避免“胖服务”的有效方式。
 
 
 
-### 项目初始化
+### 2 项目初始化
 
 
 
@@ -180,6 +180,10 @@ composer create-project laravel/laravel ARPayroll  10.x
 
 
 `.env`配置数据库
+
+
+
+安装 JSON:API Resource 和 Laravel Query Builder 两个扩展包
 
 ```sh
 composer require timacdonald/json-api:'v1.*'
@@ -274,7 +278,7 @@ routes/api/v1.php
 routes/api/v2.php
 ```
 
-在 `app/Providers/RouteServiceProvider.php` 中通过路由前缀+版本文件提供对 API 版本的支持和管理：
+在 `app/Providers/RouteServiceProvider.php` 中通过路由前缀+版本文件提供对API版本的支持和管理：
 
 ```php
 public function boot()
@@ -335,11 +339,13 @@ php artisan pest:install
 
 
 
-### 部门API开发
+### 3 部门API开发
 
 
 
-#### 创建部门
+#### 3.1 创建部门
+
+##### 测试用例
 
 ```sh
 php artisan pest:test CreateDepartmentTest
@@ -347,9 +353,54 @@ php artisan pest:test CreateDepartmentTest
 
 
 
+```
+./vendor/bin/pest
+
+
+./vendor/bin/pest tests/Feature/CreateDepartmentTest.php
+```
 
 
 
+##### 业务代码
+
+DDD的概念来让代码复用性更好、结构更清晰、更具备可读性。
+
+在 DDD 中，用户请求数据会被封装到**DTO对象**统一结构化，然后传递给领域层。这里在 `app/DTOs` 目录下新建一个 DTO 类 `DepartmentData` 来封装新建部门的请求数据：
+
+```php
+<?php
+
+namespace App\DTOs;
+
+class DepartmentData
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly ?string $description
+    ) {}
+}
+```
+
+我们不会创建单独的 Service 来处理业务逻辑，因为和传统 MVC 模式容易导致胖模型一样，Service 也很容易膨胀为胖服务，为了解决这个问题，在 Laravel 中可以创建 Action 以单一职责模式处理单个用户故事，Action 可以被控制器、队列任务、命令行等多种入口调用，从而提高了代码复用性。这里我们在 `app/Actions` 目录下新建一个 `CreateDepartmentAction.php`，然后在 Action 类中定义一个 `execute` 方法处理实际业务逻辑 —— 新建部门，`CreateDepartmentAction` 接收部门 DTO 对象作为参数，返回 `Department` 模型类实例：
+
+```php
+class CreateDepartmentAction
+{
+    // 处理实际业务逻辑：新建部门
+    public function execute(DepartmentData $departmentData): Department
+    {
+        return Department::create([
+           'name' => $departmentData->name,
+            'description' => $departmentData->description,
+        ]);
+    }
+}
+```
+
+
+
+新建了一个专门**处理新建部门的==表单请求类==** `StoreDepartmentRequest` 用于对请求数据进行验证：
 
 ```sh
 php artisan make:request StoreDepartmentRequest
@@ -357,7 +408,7 @@ php artisan make:request StoreDepartmentRequest
 
 
 
-
+创建一个**API Resource类** `DepartmentResource` 来封装响应的 JSON 数据（先通过自带的处理，后面再重构优化）：
 
 ```sh
 php artisan make:resource DepartmentResource
@@ -365,17 +416,43 @@ php artisan make:resource DepartmentResource
 
 
 
-
+新建一个资源控制器 `DepartmentController` ，在 `store` 方法中把以上操作都串起来（编排），形成一个完整的新建部门功能，包括**表单请求验证、DTO对象转化、Action调用、响应数据包装及返回**：
 
 ```sh
 php artisan make:controller DepartmentController --resource
+```
+
+```php
+class DepartmentController extends Controller
+{
+    public function __construct(
+        public readonly CreateDepartmentAction $createDepartment,
+        public readonly UpdateDepartmentAction $updateDepartment
+    ) {}
+
+    public function store(StoreDepartmentRequest $request)
+    {
+        $departmentData = new DepartmentData(...$request->validated()); // TODO
+        $department = $this->createDepartment->execute($departmentData);
+        return DepartmentResource::make($department)->response();
+    }
+  	...
+}
+```
+
+
+
+添加路由
+
+```php
+Route::apiResource('departments', DepartmentController::class);
 ```
 
 
 
 
 
-#### 更新部门
+#### 3.2 更新部门
 
 
 
@@ -385,19 +462,21 @@ php artisan pest:test UpdateDepartmentTest
 
 
 
+
+
 ```sh
 php artisan make:request UpdateDepartmentRequest
 ```
 
 
 
-#### 获取部门
+#### 3.3 获取部门
 
 
 
 
 
-#### 关联资源
+#### 3.4 关联资源
 
 
 
