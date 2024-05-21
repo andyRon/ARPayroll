@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Department;
 use Illuminate\Support\Facades\Route;
+use function Pest\Laravel\getJson;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,4 +21,15 @@ Route::get('/', function () {
 
 Route::get('/login', function () {
     return 'login';
+})->name('login');
+
+Route::get('/test', function () {
+    $development = Department::factory(['name' => 'Development3', 'description' => 'dev is very good3'])->create();
+
+//    print_r(route('departments.show', ['department' => $development]));
+    print_r('sdfasdfsadf');
+    $department = getJson(route('departments.show', ['department' => $development]))
+        ->json('data');
+//    dd($development);
+
 });

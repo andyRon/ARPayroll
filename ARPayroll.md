@@ -1,11 +1,9 @@
-薪酬系统API
+薪酬系统
 ----
 
 https://laravelacademy.org/books/test-driven-apis-with-laravel
 
-
-
-简单的薪资系统CRM
+简单的薪资系统CRM，以测试驱动API开发
 
 ### 1 CRM API整体设计
 
@@ -310,6 +308,30 @@ API 不要对外暴露自增 ID，而要使用 UUID，两者的适用场景如�
 composer require ramsey/uuid
 ```
 
+定义一个可以被所有模型类复用的 Trait，让需要UUID的模型在创建的时候自动生成UUID。
+
+```php
+<?php
+
+namespace App\Models\Concerns;
+
+use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Uuid;
+
+/**
+ * 用于需要UUID字段的模型
+ */
+trait HasUuid
+{
+    public static function bootHasUuid(): void
+    {
+        Model::creating(function (Model $model) {
+            $model->uuid = Uuid::uuid4()->toString();
+        });
+    }
+}
+```
+
 
 
 #### 配置 Pest
@@ -366,7 +388,7 @@ php artisan pest:test CreateDepartmentTest
 
 DDD的概念来让代码复用性更好、结构更清晰、更具备可读性。
 
-在 DDD 中，用户请求数据会被封装到**DTO对象**统一结构化，然后传递给领域层。这里在 `app/DTOs` 目录下新建一个 DTO 类 `DepartmentData` 来封装新建部门的请求数据：
+在DDD中，**用户请求数据**会被封装到**==DTO对象==**（Data Transfer Object）统一结构化，然后传递给领域层。这里在`app/DTOs`目录下新建一个DTO类`DepartmentData`来封装新建部门的请求数据：
 
 ```php
 <?php
@@ -382,7 +404,7 @@ class DepartmentData
 }
 ```
 
-我们不会创建单独的 Service 来处理业务逻辑，因为和传统 MVC 模式容易导致胖模型一样，Service 也很容易膨胀为胖服务，为了解决这个问题，在 Laravel 中可以创建 Action 以单一职责模式处理单个用户故事，Action 可以被控制器、队列任务、命令行等多种入口调用，从而提高了代码复用性。这里我们在 `app/Actions` 目录下新建一个 `CreateDepartmentAction.php`，然后在 Action 类中定义一个 `execute` 方法处理实际业务逻辑 —— 新建部门，`CreateDepartmentAction` 接收部门 DTO 对象作为参数，返回 `Department` 模型类实例：
+我们不会创建单独的 Service 来处理业务逻辑，因为和传统 MVC 模式容易导致胖模型一样，Service 也很容易膨胀为胖服务，为了解决这个问题，在 Laravel 中可以创建 Action 以单一职责模式处理单个用户故事，Action 可以被**控制器、队列任务、命令行**等多种入口调用，从而提高了代码复用性。这里我们在 `app/Actions` 目录下新建一个 `CreateDepartmentAction.php`，然后在 Action 类中定义一个 `execute` 方法处理实际业务逻辑 —— 新建部门，`CreateDepartmentAction` 接收部门 DTO 对象作为参数，返回 `Department` 模型类实例：
 
 ```php
 class CreateDepartmentAction
@@ -416,7 +438,7 @@ php artisan make:resource DepartmentResource
 
 
 
-新建一个资源控制器 `DepartmentController` ，在 `store` 方法中把以上操作都串起来（编排），形成一个完整的新建部门功能，包括**表单请求验证、DTO对象转化、Action调用、响应数据包装及返回**：
+新建一个资源控制器 `DepartmentController` ，在 `store` 方法中把以上操作都串起来（编排），形成一个完整的新建部门功能，包括**==表单请求验证、DTO对象转化、Action调用、响应数据包装及返回==**：【`StoreDepartmentRequest`,`DepartmentData`,`CreateDepartmentAction`,`DepartmentResource`】
 
 ```sh
 php artisan make:controller DepartmentController --resource
@@ -450,11 +472,17 @@ Route::apiResource('departments', DepartmentController::class);
 
 
 
+```sh
+./vendor/bin/pest tests/Feature/CreateDepartmentTest.php
+```
+
+
+
 
 
 #### 3.2 更新部门
 
-
+##### 测试用例
 
 ```sh
 php artisan pest:test UpdateDepartmentTest
@@ -462,10 +490,16 @@ php artisan pest:test UpdateDepartmentTest
 
 
 
-
+##### 业务代码
 
 ```sh
 php artisan make:request UpdateDepartmentRequest
+```
+
+
+
+```sh
+./vendor/bin/pest tests/Feature/UpdateDepartmentTest.php 
 ```
 
 
@@ -480,9 +514,9 @@ php artisan make:request UpdateDepartmentRequest
 
 
 
-### 员工API开发（上）
+### 4 员工API开发（上）
 
-#### 支付类型
+#### 4.1 支付类型
 
 员工按照工资支付方式分为两种类型：
 
@@ -491,7 +525,7 @@ php artisan make:request UpdateDepartmentRequest
 
 
 
-#### 创建/更新员工
+#### 4.2 创建/更新员工
 
 
 
@@ -508,7 +542,79 @@ php artisan make:request UpsertEmployeeRequest
 
 
 
-#### 创建/更新员工用例
+#### 4.3 创建/更新员工用例
+
+##### 表单请求验证
+
+##### 创建/更新员工用例
+
+
+##### Employee DTO
+
+在DDD中，一般会通过DTO对请求数据进行封装后传递给领域层，然后在领域层处理完毕后，将结果再转化为DTO的数据格式返回。这样做的一个好处是统一结构化用户请求参数，以及屏蔽领域层的数据结构细节。
+
+在 PHP 里面，一个经常被诟病的问题就是各种请求参数都用数组表示，你永远不知道传入的参数中到底包含什么数据，这给系统维护和迭代带来巨大困扰，尤其是中大型系统，同时也成了很多线上问题的重灾区，我们可以引入 DTO 来规范和解决这个问题，以员工请求数据为例，我们可以创建一个名为 `EmployeeData` 的 DTO 类来装载员工表单数据。
+
+```php
+<?php
+
+namespace App\DTOs;
+
+use App\Http\Requests\UpsertEmployeeRequest;
+use App\Models\Department;
+
+class EmployeeData
+{
+    public function __construct(
+        public readonly string $fullName,
+        public readonly string $email,
+        public readonly Department $department,
+        public readonly string $jobTitle,
+        public readonly string $paymentType,
+        public readonly ?int $salary,
+        public readonly ?int $hourlyRate,
+    ) {}
+
+    public static function fromRequest(UpsertEmployeeRequest $request): self
+    {
+        return new static(
+            $request->fullName,
+            $request->email,
+            $request->getDepartment(),
+            $request->jobTitle,
+            $request->paymentType,
+            $request->salary,
+            $request->hourlyRate,
+        );
+    }
+}
+```
+
+在这个 DTO 中，需要定义一个 `fromRequest` 方法将请求字段和 DTO 属性做一一映射，虽然增加了代码量，但是却为日后的系统维护打下了良好的基础。
+
+
+
+##### UpsertEmployeeAction
+
+传统 [MVC 模式](https://laravelacademy.org/post/9614#toc-0) 是一种分层架构，在实际业务开发中，会面临业务逻辑应该放在哪里的困扰，如果放到控制器里面会导致控制器的臃肿，如果放到模型类里面会造成模型类的臃肿（胖模型），而且如果是与数据库无关的业务逻辑也不适合放到模型类。
+
+经过这么多年的工程实践和演化，也推出了很多新的架构模式，比如独立出一个服务层，把控制器里的业务逻辑都放到 Service 面，让控制器瘦身，同时也提高了代码的复用性，服务不仅可以被控制器调用，也可以被命令行、消息队列调用，这也是目前很多公司的架构模式，而在模型类之上又添加一个[仓储模式](https://laravelacademy.org/post/3053.html)，专门负责与数据库的交互，以让模型类瘦身：
+
+![](images/image-20240521153444951.png)
+
+> DDD 和微服务已经把这一套玩的很熟了，有很成熟的架构模式。
+
+
+
+
+
+##### Employee Resource
+
+使用 JSON:API Resourse 扩展包来保证 API 接口返回的数据是遵循 JSON API 规范的，因此需要创建一个继承自 `TiMacDonald\JsonApi\JsonApiResource` 的 `EmployeeResource`，然后编写属性转化方法。
+
+##### Employee Controller
+
+
 
 
 
@@ -518,13 +624,15 @@ php artisan make:request UpsertEmployeeRequest
 php artisan make:controller EmployeeController --resource
 ```
 
+##### 让测试用例通过
 
 
-### 员工API开发（下）
 
 
 
-#### 获取员工列表
+### 5 员工API开发（下）
+
+#### 5.1 获取员工列表
 
 ```sh
 # 返回邮箱中包含 john@example.com 的所有员工
@@ -542,7 +650,9 @@ GET /api/v1/employees?include=department
 
 
 
+##### 测试用例
 
+创建测试文件：
 
 ```sh
 php artisan pest:test GetEmployeesTest
@@ -550,13 +660,32 @@ php artisan pest:test GetEmployeesTest
 
 
 
-#### 资源和值对象
+##### 业务代码
 
 
 
+#### 5.2 资源和值对象
+
+使用值对象的方式对薪资金额的数据格式进行优化。
+
+所谓==值对象==，就是封装了基本标量数据（整型、浮点型、字符串、布尔类型等）的低级类。
 
 
-### 支付API开发
+
+值对象的特点：
+
+- 不可变，属性值只读，不提供setter
+- 不包含任何标志性属性，如ID（这也是值对象与实体的主要区别）
+
+在应用代码中，通常可以将地址、邮箱、数字等标量数据转化为值对象进行处理。**通过使用值对象，可以从内聚的标量数据中创建对象**，因此，使用值对象有如下优点：
+
+- 让代码更高级
+- 澄清事实避免混淆（通过代码可以直观看出这个值的用途）
+- 可以封装对空值的处理
+
+其实涉及到数据处理的操作在业务系统多个地方都会用到，值对象通常应用在应用内部，而在应用边界，通常使用数据转换对象（DTO）。
+
+### 6 支付API开发
 
 
 
@@ -564,11 +693,17 @@ php artisan pest:test GetEmployeesTest
 php artisan pest:test PaycheckTest
 ```
 
-#### 创建薪资支票
+#### 6.1 创建薪资支票
+
+##### 为工薪员工创建薪资支票
 
 
 
-#### 获取员工薪资记录
+##### 为时薪员工创建薪资支票
+
+
+
+#### 6.2 获取员工薪资记录
 
 ```sh
 GET /api/v1/employees/[uuid]/paychecks

@@ -22,7 +22,7 @@ class DepartmentFactory extends Factory
     {
         return [
             'uuid' => $this->faker->uuid(),
-            'name' => $this->faker->name(),
+            'name' => $this->faker->company(),
             'description' => $this->faker->text(),
         ];
     }

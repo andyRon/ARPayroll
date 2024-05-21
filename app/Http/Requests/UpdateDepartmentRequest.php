@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * 更新部门接口的表单请求类
+ */
 class UpdateDepartmentRequest extends FormRequest
 {
     /**

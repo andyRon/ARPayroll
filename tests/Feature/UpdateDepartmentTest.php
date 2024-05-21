@@ -5,12 +5,6 @@ use Laravel\Sanctum\Sanctum;
 
 use function Pest\Laravel\putJson;
 
-//it('has updatedepartment page', function () {
-//    $response = $this->get('/updatedepartment');
-//
-//    $response->assertStatus(200);
-//});
-
 it('should update a department', function (string $name, string $description) {
     Sanctum::actingAs(User::factory()->create(), ['*']);
 

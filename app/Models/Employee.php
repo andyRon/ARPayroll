@@ -58,7 +58,10 @@ class Employee extends Model
         return $this->belongsTo(Department::class);
     }
 
-    // 设置了 HTTP 路由中将使用 UUID 而不是自增 ID 作为资源的标识
+    /**
+     * 设置了HTTP路由中将使用UUID而不是自增ID作为资源的标识
+     * @return string
+     */
     public function getRouteKeyName(): string
     {
         return 'uuid';

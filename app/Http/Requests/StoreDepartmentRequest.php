@@ -4,7 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// 专门处理新建部门的表单请求类
+
+/**
+ * 专门处理新建部门的表单请求类
+ */
 class StoreDepartmentRequest extends FormRequest
 {
     /**

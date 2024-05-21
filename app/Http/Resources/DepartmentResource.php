@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use TiMacDonald\JsonApi\JsonApiResource;
 
+/**
+ * 封装响应的JSON数据
+ */
 class DepartmentResource extends JsonApiResource
 {
     /**

@@ -41,6 +41,7 @@ class DepartmentController extends Controller
     {
         $departmentData = new DepartmentData(...$request->validated()); // TODO
         $department = $this->createDepartment->execute($departmentData);
+//        dd($departmentData);
         return DepartmentResource::make($department)->response();
     }
 

@@ -4,6 +4,8 @@ use App\Enums\PaymentTypes;
 use App\Models\Employee;
 use App\Models\Paycheck;
 
+// 获取员工薪资记录
+
 it('should return all paychecks for an employee', function () {
     $employee = Employee::factory([
         'payment_type' => PaymentTypes::SALARY->value

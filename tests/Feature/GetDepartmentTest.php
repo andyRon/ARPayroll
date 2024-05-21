@@ -5,7 +5,9 @@ use App\Models\Department;
 use function Pest\Laravel\getJson;
 
 it('should return a department', function () {
-    $development = Department::factory(['name' => 'Development'])->create();
+    $development = Department::factory(['name' => 'Development', 'description' => 'dev is very good'])->create();
+
+
 
     $department = getJson(route('departments.show', ['department' => $development]))
         ->json('data');
