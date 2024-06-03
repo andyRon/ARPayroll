@@ -67,7 +67,7 @@ class Employee extends Model
         return 'uuid';
     }
 
-    public function getPaymentTypeAttribute(): PaymentType
+    public function getPaymentTypeAttribute()
     {
         return PaymentTypes::from($this->original['payment_type'])->makePaymentType($this); // TODO
     }

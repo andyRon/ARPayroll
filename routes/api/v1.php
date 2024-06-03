@@ -18,3 +18,17 @@ Route::post('paycheck', [PaydayController::class, 'store']
 
 Route::get('employees/{employee}/paychecks', [EmployeePaycheckController::class, 'index']
 )->name('employee.paychecks.index');
+
+
+Route::get('/test', function () {
+    return \route('payday.store');
+
+//    $development = Department::factory(['name' => 'Development3', 'description' => 'dev is very good3'])->create();
+//
+//    print_r(route('departments.show', ['department' => $development]));
+//    $department = getJson(route('departments.show', ['department' => $development]))
+//        ->json('data');
+//    print_r(12);
+////    print_r($department);
+
+});

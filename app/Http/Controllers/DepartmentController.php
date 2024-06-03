@@ -23,7 +23,8 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        return DepartmentResource::collection(Department::all());
+        return Department::all();
+//        return DepartmentResource::collection(Department::all());  // TODO
     }
 
     /**

@@ -715,3 +715,18 @@ GET /api/v1/employees/[uuid]/paychecks
 php artisan pest:test GetEmployeePaychecksTest
 ```
 
+
+
+
+
+>http://127.0.0.1:8000/api/v1/employees/15568dc2-44f1-b3a0-a81f-2f3776c12599/paychecks
+>
+>
+
+
+
+bugs
+
+http://127.0.0.1:8000/api/v1/departments/15/employees
+
+http://127.0.0.1:8000/api/v1/departments
